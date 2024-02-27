@@ -46,7 +46,7 @@ int ZSudoku::GetNumCount(int nNum, DIRECTION emDir, int nIndex)
 }
 
 
-int ZSudoku::GetNumCount(int nNum, BLOCKINDEX emBlock)
+int ZSudoku::GetNumCount(int nNum, BLOCK_INDEX emBlock)
 {
 	int nCount = 0;
 	for (int i = 0; i < 3; ++i)
@@ -322,7 +322,7 @@ void ZSudoku::GetData(int* p_nData)
 void ZSudoku::GetCandidateNum(int nX, int nY, std::vector<int>& vec_nNum)
 {
 	vec_nNum.clear();
-	BLOCKINDEX emBlock = BLOCKINDEX(nX / 3 * 3 + nY / 3);
+	BLOCK_INDEX emBlock = BLOCK_INDEX(nX / 3 * 3 + nY / 3);
 	for (int nNum = 1; nNum <= 9; ++nNum)
 	{
 		if (GetNumCount(nNum, DIR_ROW, nX) == 0 && GetNumCount(nNum, DIR_COLUMN, nY) == 0 && GetNumCount(nNum, emBlock) == 0)
@@ -338,14 +338,30 @@ bool ZSudoku::RuleCheck()
 		for (int i = 0; i < ZSUDOKU_SIZE; ++i)
 		{
 			if (GetNumCount(nNum, DIR_ROW, i) > 1)
+			{
+				m_rei = RuleErrorInfo(RULE_ERR_ROW, i, nNum);
 				return false;
+			}
 			if (GetNumCount(nNum, DIR_COLUMN, i) > 1)
+			{
+				m_rei = RuleErrorInfo(RULE_ERR_COLUMN, i, nNum);
 				return false;
-			if (GetNumCount(nNum, (BLOCKINDEX)i) > 1)
+			}
+			if (GetNumCount(nNum, (BLOCK_INDEX)i) > 1)
+			{
+				m_rei = RuleErrorInfo(RULE_ERR_BLOCK, i, nNum);
 				return false;
+			}
 		}
 	}
+	m_rei = RuleErrorInfo(RULE_ERR_NONE, 0, 0);
 	return true;
+}
+
+
+const  ZSudoku::RuleErrorInfo & ZSudoku::GetLastRuleError()
+{
+	return m_rei;
 }
 
 

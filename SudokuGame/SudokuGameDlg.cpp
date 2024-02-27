@@ -88,6 +88,7 @@ BEGIN_MESSAGE_MAP(CSudokuGameDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_LOCK, &CSudokuGameDlg::OnBnClickedButtonLock)
 	ON_BN_CLICKED(IDC_BUTTON_UNLOCK, &CSudokuGameDlg::OnBnClickedButtonUnlock)
 	ON_BN_CLICKED(IDC_BUTTON_CLEAR, &CSudokuGameDlg::OnBnClickedButtonClear)
+	ON_BN_CLICKED(IDC_BUTTON_CHECK, &CSudokuGameDlg::OnBnClickedButtonCheck)
 	ON_BN_CLICKED(IDC_BUTTON_CANDIDATE, &CSudokuGameDlg::OnBnClickedButtonCandidate)
 	ON_BN_CLICKED(IDC_BUTTON_BASICCALC, &CSudokuGameDlg::OnBnClickedButtonBasiccalc)
 	ON_BN_CLICKED(IDC_BUTTON_AUTOCALC, &CSudokuGameDlg::OnBnClickedButtonAutocalc)
@@ -266,6 +267,15 @@ void CSudokuGameDlg::OnBnClickedButtonClear()
 }
 
 
+void CSudokuGameDlg::OnBnClickedButtonCheck()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	GetDataFromEdit();
+	m_sudoku.RuleCheck();
+	AfxMessageBox(GetRuleErrorInfo());
+}
+
+
 void CSudokuGameDlg::OnBnClickedButtonCandidate()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -294,7 +304,7 @@ void CSudokuGameDlg::OnBnClickedButtonBasiccalc()
 	GetDataFromEdit();
 	if (!m_sudoku.RuleCheck())
 	{
-		AfxMessageBox(_T("单行、单列或九宫格存在重复数字！"));
+		AfxMessageBox(GetRuleErrorInfo());
 		return;
 	}
 	m_sudoku.BasicCalc();
@@ -308,7 +318,7 @@ void CSudokuGameDlg::OnBnClickedButtonAutocalc()
 	GetDataFromEdit();
 	if (!m_sudoku.RuleCheck())
 	{
-		AfxMessageBox(_T("单行、单列或九宫格存在重复数字！"));
+		AfxMessageBox(GetRuleErrorInfo());
 		return;
 	}
 	EnableButton(FALSE);
@@ -498,7 +508,24 @@ void CSudokuGameDlg::EnableButton(BOOL nEnable)
 	GetDlgItem(IDC_BUTTON_LOCK)->EnableWindow(nEnable);
 	GetDlgItem(IDC_BUTTON_UNLOCK)->EnableWindow(nEnable);
 	GetDlgItem(IDC_BUTTON_CLEAR)->EnableWindow(nEnable);
+	GetDlgItem(IDC_BUTTON_CHECK)->EnableWindow(nEnable);
 	GetDlgItem(IDC_BUTTON_CANDIDATE)->EnableWindow(nEnable);
 	GetDlgItem(IDC_BUTTON_BASICCALC)->EnableWindow(nEnable);
 	GetDlgItem(IDC_BUTTON_AUTOCALC)->EnableWindow(nEnable);
+}
+
+
+CString CSudokuGameDlg::GetRuleErrorInfo()
+{
+	CString strError;
+	const ZSudoku::RuleErrorInfo& rei = m_sudoku.GetLastRuleError();
+	switch (rei.m_type)
+	{
+	case ZSudoku::RULE_ERR_NONE:strError.Format(_T("检查成功")); break;
+	case ZSudoku::RULE_ERR_ROW:strError.Format(_T("第%d行存在多个数字\"%d\""), rei.m_nIndex + 1, rei.m_nNumber); break;
+	case ZSudoku::RULE_ERR_COLUMN:strError.Format(_T("第%d列存在多个数字\"%d\""), rei.m_nIndex + 1, rei.m_nNumber); break;
+	case ZSudoku::RULE_ERR_BLOCK:strError.Format(_T("第%d宫存在多个数字\"%d\""), rei.m_nIndex + 1, rei.m_nNumber); break;
+	default:break;
+	}
+	return strError;
 }

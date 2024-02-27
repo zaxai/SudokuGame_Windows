@@ -47,6 +47,7 @@ public:
 	afx_msg void OnBnClickedButtonLock();
 	afx_msg void OnBnClickedButtonUnlock();
 	afx_msg void OnBnClickedButtonClear();
+	afx_msg void OnBnClickedButtonCheck();
 	afx_msg void OnBnClickedButtonCandidate();
 	afx_msg void OnBnClickedButtonBasiccalc();
 	afx_msg void OnBnClickedButtonAutocalc();
@@ -64,4 +65,5 @@ public:
 	void SetDataToEdit();
 	void SetEditFont(UINT nID);
 	void EnableButton(BOOL nEnable);
+	CString GetRuleErrorInfo();
 };
