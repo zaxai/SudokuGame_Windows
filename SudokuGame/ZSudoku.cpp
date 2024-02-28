@@ -86,6 +86,18 @@ int ZSudoku::GetFirstNumReverseIndex(int nNum, DIRECTION emDir, int nIndex)
 }
 
 
+void ZSudoku::GetCandidateNum(int nX, int nY, std::vector<int>& vec_nNum)
+{
+	vec_nNum.clear();
+	BLOCK_INDEX emBlock = BLOCK_INDEX(nX / 3 * 3 + nY / 3);
+	for (int nNum = 1; nNum <= 9; ++nNum)
+	{
+		if (GetNumCount(nNum, DIR_ROW, nX) == 0 && GetNumCount(nNum, DIR_COLUMN, nY) == 0 && GetNumCount(nNum, emBlock) == 0)
+			vec_nNum.push_back(nNum);
+	}
+}
+
+
 int ZSudoku::ThreeLinesModule(DIRECTION emDir, int nStartIndex)
 {
 	int nCount = 0;
@@ -319,18 +331,6 @@ void ZSudoku::GetData(int* p_nData)
 }
 
 
-void ZSudoku::GetCandidateNum(int nX, int nY, std::vector<int>& vec_nNum)
-{
-	vec_nNum.clear();
-	BLOCK_INDEX emBlock = BLOCK_INDEX(nX / 3 * 3 + nY / 3);
-	for (int nNum = 1; nNum <= 9; ++nNum)
-	{
-		if (GetNumCount(nNum, DIR_ROW, nX) == 0 && GetNumCount(nNum, DIR_COLUMN, nY) == 0 && GetNumCount(nNum, emBlock) == 0)
-			vec_nNum.push_back(nNum);
-	}
-}
-
-
 bool ZSudoku::RuleCheck()
 {
 	for (int nNum = 1; nNum <= 9; ++nNum)
@@ -396,4 +396,46 @@ void ZSudoku::StopAutoCalc()
 	m_bIsAutoCalcRun = false;
 	if (m_threadAutoCalc.joinable())
 		m_threadAutoCalc.join();
+}
+
+
+CString ZSudoku::GetCandidateNum(int nX, int nY)
+{
+	CString strCandidateNum;
+	if (m_sz2_nData[nX][nY] == 0)
+	{
+		CString strNum;
+		std::vector<int> vec_nNum;
+		GetCandidateNum(nX, nY, vec_nNum);
+		if (!vec_nNum.empty())
+		{
+			for (int nNum = 1; nNum <= 9; ++nNum)
+			{
+				if (std::find(vec_nNum.begin(), vec_nNum.end(), nNum) != vec_nNum.end())
+				{
+					strNum.Format(_T("%d"), nNum);
+					strCandidateNum += strNum;
+				}
+				else
+					strCandidateNum += _T(" ");
+				switch (nNum)
+				{
+				case 1:
+				case 2:
+				case 4:
+				case 5:
+				case 7:
+				case 8:
+					strCandidateNum += _T(" ");
+					break;
+				case 3:
+				case 6:
+					strCandidateNum += _T("\r\n");
+					break;
+				default:break;
+				}
+			}
+		}
+	}
+	return strCandidateNum;
 }

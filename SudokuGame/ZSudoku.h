@@ -80,6 +80,7 @@ private:
 	int GetNumCount(int nNum, DIRECTION emDir, int nIndex);
 	int GetNumCount(int nNum, BLOCK_INDEX emBlock);
 	int GetFirstNumReverseIndex(int nNum, DIRECTION emDir, int nIndex);
+	void GetCandidateNum(int nX, int nY, std::vector<int>& vec_nNum);
 	int ThreeLinesModule(DIRECTION emDir, int nStartIndex);
 	int CandidateModule(int nX, int nY);
 	int ThreeLinesAlgorithm();
@@ -96,10 +97,10 @@ public:
 	virtual ~ZSudoku();
 	void SetData(const int * p_nData);
 	void GetData(int* p_nData);
-	void GetCandidateNum(int nX, int nY, std::vector<int>& vec_nNum);
 	bool RuleCheck();
 	const RuleErrorInfo & GetLastRuleError();
 	void BasicCalc();
 	void StartAutoCalc(AutoCalcCallback* p_callback);
 	void StopAutoCalc();
+	CString GetCandidateNum(int nX, int nY);
 };

@@ -37,7 +37,7 @@ private:
 	std::vector<CFont*> m_vec_p_font;
 	std::vector<CEdit*> m_vec_p_edit;
 	CComboBox m_comboNumber;
-	int m_sz2_nDataOri[ZSUDOKU_SIZE][ZSUDOKU_SIZE];
+	CString m_sz_strDataOri[ZSUDOKU_TOTAL_SIZE];
 	ZSudoku m_sudoku;
 protected:
 	afx_msg LRESULT OnMsgrecvpro(WPARAM wParam, LPARAM lParam);
@@ -55,6 +55,8 @@ public:
 	afx_msg void OnBnClickedCheckHighlight();
 	afx_msg void OnCbnSelchangeComboNumber();
 	afx_msg void OnEnUpdateEditData(UINT nID);
+	afx_msg void OnEnSetfocusEditData(UINT nID);
+	afx_msg void OnEnKillfocusEditData(UINT nID);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnDestroy();
 	virtual void OnOK();
