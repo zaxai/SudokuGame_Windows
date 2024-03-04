@@ -59,13 +59,15 @@ public:
 	afx_msg void OnEnKillfocusEditData(UINT nID);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnDestroy();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual void OnOK();
 	virtual void OnAutoCalcCountUpdate(int nCount);
 	virtual void OnAutoCalcResult(bool bResult);
 	void InitUI();
 	void GetDataFromEdit();
 	void SetDataToEdit();
-	void SetEditFont(UINT nID);
+	void SetEditFont(UINT nID, const CString& strEdit);
 	void EnableButton(BOOL nEnable);
 	CString GetRuleErrorInfo();
+	void SetTimerInfo(const CString& strInfo, UINT nElapse);
 };

@@ -176,6 +176,88 @@ int ZSudoku::CandidateModule(int nX, int nY)
 }
 
 
+int ZSudoku::UniqueModule(DIRECTION emDir, int nIndex)
+{
+	int nCount = 0;
+	for (int nNum = 1; nNum <= 9; ++nNum)
+	{
+		if (GetNumCount(nNum, emDir, nIndex) == 0)
+		{
+			std::vector<CPoint> vec_pt;
+			for (int i = 0; i < ZSUDOKU_SIZE; ++i)
+			{
+				switch (emDir)
+				{
+				case DIR_ROW:
+				{
+					if (m_sz2_nData[nIndex][i] == 0)
+					{
+						std::vector<int> vec_nNum;
+						GetCandidateNum(nIndex, i, vec_nNum);
+						if (std::find(vec_nNum.begin(), vec_nNum.end(), nNum) != vec_nNum.end())
+							vec_pt.push_back(CPoint(nIndex, i));
+					}
+				}
+				break;
+				case DIR_COLUMN:
+				{
+					if (m_sz2_nData[i][nIndex] == 0)
+					{
+						std::vector<int> vec_nNum;
+						GetCandidateNum(i, nIndex, vec_nNum);
+						if (std::find(vec_nNum.begin(), vec_nNum.end(), nNum) != vec_nNum.end())
+							vec_pt.push_back(CPoint(i, nIndex));
+					}
+				}
+				break;
+				default:break;
+				}
+			}
+			if (vec_pt.size() == 1)
+			{
+				m_sz2_nData[vec_pt[0].x][vec_pt[0].y] = nNum;
+				nCount++;
+			}
+		}
+	}
+	return nCount;
+}
+
+
+int ZSudoku::UniqueModule(BLOCK_INDEX emBlock)
+{
+	int nCount = 0;
+	for (int nNum = 1; nNum <= 9; ++nNum)
+	{
+		if (GetNumCount(nNum, emBlock) == 0)
+		{
+			std::vector<CPoint> vec_pt;
+			for (int i = 0; i < 3; ++i)
+			{
+				for (int j = 0; j < 3; ++j)
+				{
+					int nX = (emBlock / 3) * 3 + i;
+					int nY = (emBlock % 3) * 3 + j;
+					if (m_sz2_nData[nX][nY] == 0)
+					{
+						std::vector<int> vec_nNum;
+						GetCandidateNum(nX, nY, vec_nNum);
+						if (std::find(vec_nNum.begin(), vec_nNum.end(), nNum) != vec_nNum.end())
+							vec_pt.push_back(CPoint(nX, nY));
+					}
+				}
+			}
+			if (vec_pt.size() == 1)
+			{
+				m_sz2_nData[vec_pt[0].x][vec_pt[0].y] = nNum;
+				nCount++;
+			}
+		}
+	}
+	return nCount;
+}
+
+
 int ZSudoku::ThreeLinesAlgorithm()
 {
 	int nCount = 0;
@@ -200,9 +282,22 @@ int ZSudoku::CandidateAlgorithm()
 }
 
 
+int ZSudoku::UniqueAlgorithm()
+{
+	int nCount = 0;
+	for (int i = 0; i < ZSUDOKU_SIZE; ++i)
+	{
+		nCount += UniqueModule(DIR_ROW, i);
+		nCount += UniqueModule(DIR_COLUMN, i);
+		nCount += UniqueModule((BLOCK_INDEX)i);
+	}
+	return nCount;
+}
+
+
 int ZSudoku::BasicAlgorithm()
 {
-	return (ThreeLinesAlgorithm() + CandidateAlgorithm());
+	return (ThreeLinesAlgorithm() + CandidateAlgorithm() + UniqueAlgorithm());
 }
 
 
@@ -362,6 +457,18 @@ bool ZSudoku::RuleCheck()
 const  ZSudoku::RuleErrorInfo & ZSudoku::GetLastRuleError()
 {
 	return m_rei;
+}
+
+
+int ZSudoku::GetConfirmedCount()
+{
+	return m_nTotal;
+}
+
+
+int ZSudoku::GetUnconfirmedCount()
+{
+	return ZSUDOKU_TOTAL_SIZE - m_nTotal;
 }
 
 

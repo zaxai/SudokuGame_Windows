@@ -83,8 +83,11 @@ private:
 	void GetCandidateNum(int nX, int nY, std::vector<int>& vec_nNum);
 	int ThreeLinesModule(DIRECTION emDir, int nStartIndex);
 	int CandidateModule(int nX, int nY);
+	int UniqueModule(DIRECTION emDir, int nIndex);
+	int UniqueModule(BLOCK_INDEX emBlock);
 	int ThreeLinesAlgorithm();
 	int CandidateAlgorithm();
+	int UniqueAlgorithm();
 	int BasicAlgorithm();
 	void DataFreeze();
 	void DataUnfreeze();
@@ -99,6 +102,8 @@ public:
 	void GetData(int* p_nData);
 	bool RuleCheck();
 	const RuleErrorInfo & GetLastRuleError();
+	int GetConfirmedCount();
+	int GetUnconfirmedCount();
 	void BasicCalc();
 	void StartAutoCalc(AutoCalcCallback* p_callback);
 	void StopAutoCalc();

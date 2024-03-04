@@ -48,6 +48,7 @@ END_MESSAGE_MAP()
 
 // CSudokuGameDlg 对话框
 const COLORREF crHighLight = RGB(246, 166, 56);
+const int nTimerInfoClear = 1;
 
 
 
@@ -100,6 +101,7 @@ BEGIN_MESSAGE_MAP(CSudokuGameDlg, CDialogEx)
 	ON_CONTROL_RANGE(EN_KILLFOCUS, IDC_EDIT_START, IDC_EDIT_START + ZSUDOKU_TOTAL_SIZE, &CSudokuGameDlg::OnEnKillfocusEditData)
 	ON_WM_CTLCOLOR()
 	ON_WM_DESTROY()
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -224,7 +226,7 @@ void CSudokuGameDlg::OnBnClickedButtonBackup()
 		else
 			m_sz_strDataOri[i] = _T("");
 	}
-	AfxMessageBox(_T("已标记起始"));
+	SetTimerInfo(_T("已标记起始"), 3000);
 }
 
 
@@ -234,11 +236,11 @@ void CSudokuGameDlg::OnBnClickedButtonRestore()
 	for (int i = 0; i < ZSUDOKU_TOTAL_SIZE; ++i)
 	{
 		SetDlgItemText(IDC_EDIT_START + i, m_sz_strDataOri[i]);
-		SetEditFont(IDC_EDIT_START + i);
+		SetEditFont(IDC_EDIT_START + i, m_sz_strDataOri[i]);
 		if (!m_vec_p_edit[i]->IsWindowEnabled())
 			m_vec_p_edit[i]->EnableWindow(TRUE);
 	}
-	AfxMessageBox(_T("已恢复起始"));
+	SetTimerInfo(_T("已恢复起始"), 3000);
 }
 
 
@@ -272,8 +274,12 @@ void CSudokuGameDlg::OnBnClickedButtonClear()
 	for (int i = 0; i < ZSUDOKU_TOTAL_SIZE; ++i)
 	{
 		if (m_vec_p_edit[i]->IsWindowEnabled())
+		{
 			m_vec_p_edit[i]->SetWindowText(_T(""));
+			SetEditFont(IDC_EDIT_START + i, _T(""));
+		}
 	}
+	SetTimerInfo(_T("已清空"), 3000);
 }
 
 
@@ -282,7 +288,7 @@ void CSudokuGameDlg::OnBnClickedButtonCheck()
 	// TODO: 在此添加控件通知处理程序代码
 	GetDataFromEdit();
 	m_sudoku.RuleCheck();
-	AfxMessageBox(GetRuleErrorInfo());
+	SetTimerInfo(GetRuleErrorInfo(), 3000);
 }
 
 
@@ -290,6 +296,11 @@ void CSudokuGameDlg::OnBnClickedButtonCandidate()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	GetDataFromEdit();
+	if (!m_sudoku.RuleCheck())
+	{
+		SetTimerInfo(GetRuleErrorInfo(), 3000);
+		return;
+	}
 	for (int i = 0; i < ZSUDOKU_TOTAL_SIZE; ++i)
 	{
 		CString strEdit;
@@ -300,7 +311,7 @@ void CSudokuGameDlg::OnBnClickedButtonCandidate()
 			if (strCandidateNum != strEdit)
 			{
 				SetDlgItemText(IDC_EDIT_START + i, strCandidateNum);
-				SetEditFont(IDC_EDIT_START + i);
+				SetEditFont(IDC_EDIT_START + i, strCandidateNum);
 			}
 		}
 	}
@@ -313,7 +324,7 @@ void CSudokuGameDlg::OnBnClickedButtonBasiccalc()
 	GetDataFromEdit();
 	if (!m_sudoku.RuleCheck())
 	{
-		AfxMessageBox(GetRuleErrorInfo());
+		SetTimerInfo(GetRuleErrorInfo(), 3000);
 		return;
 	}
 	m_sudoku.BasicCalc();
@@ -327,7 +338,7 @@ void CSudokuGameDlg::OnBnClickedButtonAutocalc()
 	GetDataFromEdit();
 	if (!m_sudoku.RuleCheck())
 	{
-		AfxMessageBox(GetRuleErrorInfo());
+		SetTimerInfo(GetRuleErrorInfo(), 3000);
 		return;
 	}
 	EnableButton(FALSE);
@@ -339,6 +350,7 @@ void CSudokuGameDlg::OnBnClickedButtonStop()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	m_sudoku.StopAutoCalc();
+	SetTimerInfo(_T("已停止计算"), 3000);
 }
 
 
@@ -363,7 +375,9 @@ void CSudokuGameDlg::OnCbnSelchangeComboNumber()
 
 void CSudokuGameDlg::OnEnUpdateEditData(UINT nID)
 {
-	SetEditFont(nID);
+	CString strEdit;
+	GetDlgItemText(nID, strEdit);
+	SetEditFont(nID, strEdit);
 }
 
 
@@ -377,7 +391,7 @@ void CSudokuGameDlg::OnEnSetfocusEditData(UINT nID)
 		strEdit.Remove(_T('\r'));
 		strEdit.Remove(_T('\n'));
 		SetDlgItemText(nID, strEdit);
-		SetEditFont(nID);
+		SetEditFont(nID, strEdit);
 	}
 	m_vec_p_edit[nID - IDC_EDIT_START]->SetSel(0, -1);
 }
@@ -417,7 +431,7 @@ void CSudokuGameDlg::OnEnKillfocusEditData(UINT nID)
 		if (strCandidateNum != strEdit)
 		{
 			SetDlgItemText(nID, strCandidateNum);
-			SetEditFont(nID);
+			SetEditFont(nID, strCandidateNum);
 		}
 	}
 }
@@ -456,6 +470,23 @@ void CSudokuGameDlg::OnDestroy()
 }
 
 
+void CSudokuGameDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	switch (nIDEvent)
+	{
+	case nTimerInfoClear:
+	{
+		SetDlgItemText(IDC_STATIC_INFO, _T("就绪"));
+		KillTimer(nTimerInfoClear);
+	}
+	break;
+	default:break;
+	}
+	__super::OnTimer(nIDEvent);
+}
+
+
 void CSudokuGameDlg::OnOK()
 {
 	// TODO: 在此添加专用代码和/或调用基类
@@ -483,11 +514,18 @@ void CSudokuGameDlg::InitUI()
 	logfont.lfHeight = 40;
 	CFont* p_font = nullptr;
 	CEdit* p_edit = nullptr;
-	CRect rc;
-	GetClientRect(&rc);
+	CRect rc,rcBackup,rcClear;
+	GetDlgItem(IDC_BUTTON_BACKUP)->GetWindowRect(&rcBackup);
+	ScreenToClient(&rcBackup);
+	GetDlgItem(IDC_BUTTON_CLEAR)->GetWindowRect(&rcClear);
+	ScreenToClient(&rcClear);
+	const int nTotalWidth = rcClear.right - rcBackup.left;
+	const int nFixedWidth = 5 * 6 + 15 * 2;
+	const int nWidth = (nTotalWidth - nFixedWidth) / 9;
+	const int nHeight = nWidth;
+	const int nStartLeft = rcBackup.left + (nTotalWidth - nFixedWidth - nWidth * 9) / 2;
+	rc.top = rcBackup.top - nTotalWidth - 15 * 2;
 	rc.bottom = rc.top;
-	const int nStartLeft = rc.left + 15;
-	const int nWidth = 50, nHeight = 50;
 	for (int i = 0; i < 81; ++i)
 	{
 		if (i % 9 == 0)
@@ -513,6 +551,7 @@ void CSudokuGameDlg::InitUI()
 		p_edit = new CEdit();
 		p_edit->Create(WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | ES_CENTER | ES_NUMBER | ES_MULTILINE, rc, this, IDC_EDIT_START + i);
 		p_edit->SetFont(p_font);
+		GetDynamicLayout()->AddItem(p_edit->GetSafeHwnd(), CMFCDynamicLayout::MoveHorizontalAndVertical(50, 50), CMFCDynamicLayout::SizeNone());
 		m_vec_p_font.push_back(p_font);
 		m_vec_p_edit.push_back(p_edit);
 	}
@@ -551,19 +590,19 @@ void CSudokuGameDlg::SetDataToEdit()
 	{
 		if (sz_nData[i])
 		{
-			SetDlgItemInt(IDC_EDIT_START + i, sz_nData[i]);
-			SetEditFont(IDC_EDIT_START + i);
+			CString strEdit;
+			strEdit.Format(_T("%d"), sz_nData[i]);
+			SetDlgItemText(IDC_EDIT_START + i, strEdit);
+			SetEditFont(IDC_EDIT_START + i, strEdit);
 		}
 	}
 }
 
 
-void CSudokuGameDlg::SetEditFont(UINT nID)
+void CSudokuGameDlg::SetEditFont(UINT nID, const CString& strEdit)
 {
 	LOGFONT logfont;
 	GetFont()->GetLogFont(&logfont);
-	CString strEdit;
-	GetDlgItemText(nID, strEdit);
 	if (strEdit.GetLength() > 1)
 		logfont.lfHeight = 15;
 	else
@@ -594,11 +633,18 @@ CString CSudokuGameDlg::GetRuleErrorInfo()
 	const ZSudoku::RuleErrorInfo& rei = m_sudoku.GetLastRuleError();
 	switch (rei.m_type)
 	{
-	case ZSudoku::RULE_ERR_NONE:strError.Format(_T("检查成功")); break;
+	case ZSudoku::RULE_ERR_NONE:strError.Format(_T("检查成功，已确认：%d个，未确认：%d个"),m_sudoku.GetConfirmedCount(),m_sudoku.GetUnconfirmedCount()); break;
 	case ZSudoku::RULE_ERR_ROW:strError.Format(_T("第%d行存在多个数字\"%d\""), rei.m_nIndex + 1, rei.m_nNumber); break;
 	case ZSudoku::RULE_ERR_COLUMN:strError.Format(_T("第%d列存在多个数字\"%d\""), rei.m_nIndex + 1, rei.m_nNumber); break;
 	case ZSudoku::RULE_ERR_BLOCK:strError.Format(_T("第%d宫存在多个数字\"%d\""), rei.m_nIndex + 1, rei.m_nNumber); break;
 	default:break;
 	}
 	return strError;
+}
+
+
+void CSudokuGameDlg::SetTimerInfo(const CString& strInfo, UINT nElapse)
+{
+	SetDlgItemText(IDC_STATIC_INFO, strInfo);
+	SetTimer(nTimerInfoClear, nElapse, nullptr);
 }
